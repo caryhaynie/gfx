@@ -6,6 +6,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+
+
 fn main() {
     let pd = env::var("CARGO_MANIFEST_DIR").unwrap();
     let target = env::var("TARGET").unwrap();
@@ -54,9 +56,16 @@ fn main() {
         let mut out_path = out_dir.join(shader_path.file_name().unwrap());
         out_path.set_extension("air");
 
+        let min_version = match sdk_name {
+            "iphoneos" => "-miphoneos-version-min=10.0",
+            "macosx" => "-mmacosx-version-min=10.12",
+            _ => panic!("unsupported sdk {}", target),
+        };
+
         let status = Command::new("xcrun")
             .args(&["-sdk", sdk_name, "metal", "-c"])
             .arg(shader_path.as_os_str())
+            .arg(min_version)
             .arg("-o")
             .arg(out_path.as_os_str())
             .status()
